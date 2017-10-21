@@ -1,0 +1,58 @@
+.game-card-25, .game-card-50 {
+  background-size: contain;
+  display: inline-block;
+}
+
+.game-card-25 {
+  width: 25%;
+}
+
+.game-card-50 {
+  width: 50%;
+}
+
+.game-card-25:before, .game-card-50:before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+.img0 {
+  background-image: url('../image/0.png');
+}
+
+.img1 {
+  background-image: url('../image/1.png');
+}
+
+.img2 {
+  background-image: url('../image/2.png');
+}
+
+.img3 {
+  background-image: url('../image/3.png');
+}
+
+.img4 {
+  background-image: url('../image/4.png');
+}
+
+.img5 {
+  background-image: url('../image/5.png');
+}
+
+.img6 {
+  background-image: url('../image/6.png');
+}
+
+.img7 {
+  background-image: url('../image/7.png');
+}
+
+.img8 {
+  background-image: url('../image/8.png');
+}
+
+.img-error {
+  filter: saturate(50);
+}

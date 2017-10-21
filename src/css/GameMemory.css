@@ -1,0 +1,12 @@
+.game-board-2, .game-board-4 {
+  margin-top: 5px;
+}
+
+.game-board-2 {
+  box-sizing: border-box;
+  width: 98%;
+}
+.game-board-4 {
+  box-sizing: border-box;
+  width: 98%;
+}
