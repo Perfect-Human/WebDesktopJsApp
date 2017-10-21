@@ -1,3 +1,10 @@
+// I canceled the use of Shadow DOM here because it caused me many limitations when
+// dealing with events. I tried using 'event.path[]' but there are still many
+// constrictions due to Shadow DOM features (but I learned more about it anyway)
+
+/**
+ * A class that represents a window that can contain an application
+ */
 class AppWindow extends window.HTMLElement {
   constructor (theTitle) {
     super()
@@ -8,11 +15,15 @@ class AppWindow extends window.HTMLElement {
   }
 
   createdCallback () {
-    let tmpStyle = document.createElement('link')
-    tmpStyle.setAttribute('rel', 'stylesheet')
-    tmpStyle.setAttribute('href', '/css/AppWindow.css')
-    this._shadow = this.attachShadow({mode: 'open'})
-    this._shadow.appendChild(tmpStyle)
+    let tmpStyle = document.querySelector('link[rel="stylesheet"][href="/css/AppWindow.css"]')
+    if (!tmpStyle) {
+      tmpStyle = document.createElement('link')
+      tmpStyle.setAttribute('rel', 'stylesheet')
+      tmpStyle.setAttribute('href', '/css/AppWindow.css')
+      // this._shadow = this.attachShadow({mode: 'open'})
+      // this._shadow.appendChild(tmpStyle)
+      this.appendChild(tmpStyle)
+    }
     this._importHtml()
   }
 
@@ -38,7 +49,8 @@ class AppWindow extends window.HTMLElement {
         this._windowInner.style.height = this._tempNewSize.height + 'px'
         this._tempNewSize = null
       }
-      this._shadow.appendChild(this._windowOuter)
+      // this._shadow.appendChild(this._windowOuter)
+      this.appendChild(this._windowOuter)
     } else {
       tmpLink = document.createElement('link')
       tmpLink.setAttribute('rel', 'import')
@@ -64,7 +76,8 @@ class AppWindow extends window.HTMLElement {
           this._windowInner.style.height = this._tempNewSize.height + 'px'
           this._tempNewSize = null
         }
-        this._shadow.appendChild(this._windowOuter)
+        // this._shadow.appendChild(this._windowOuter)
+        this.appendChild(this._windowOuter)
       })
     }
   }

@@ -25,16 +25,14 @@ class WebDesktop extends window.HTMLElement {
     this._shadow.appendChild(this._deskBar)
     this._WindowClass = require('./AppWindow')
     this._prepareEvents()
+    this._attachEvents()
   }
 
   /**
    * Prepares the desktop's events needed (intended as private)
    */
   _prepareEvents () {
-    // My idea was to let every window handle its own events, but after watching one of the course's
-    // videos, it seems that dispaching the event and handle it here is better (while letting the window
-    // handle it seems more organized)
-    this._deskBar.addEventListener('click', ev => {
+    this._eventBarClickHandler = ev => {
       switch (ev.target.tagName) {
         case 'A':
           let tmpWin = new this._WindowClass(ev.target.ApplicationClass.appName)
@@ -44,8 +42,8 @@ class WebDesktop extends window.HTMLElement {
           tmpWin.changeSize(TmpApp.defaultAppSize)
           break
       }
-    })
-    this._deskTop.addEventListener('click', ev => { // Here, due to the shadow-dom, I couldn't use ev.target as expected (luckily I found this solution)
+    }
+    this._eventTopClickHandler = ev => { // Here, due to the shadow-dom, I couldn't use ev.target as expected (luckily I found this solution)
       let tmpElem = ev.path[0]
       if (tmpElem && tmpElem.tagName === 'A') {
         if (tmpElem.classList.contains('app-win-close')) {
@@ -55,18 +53,50 @@ class WebDesktop extends window.HTMLElement {
         }
       }
       // console.log(ev.path[0].classList.contains('app-win-title'))
-      // console.log(ev.path[0])
+      // console.log(ev.path[1])
       // console.log(ev.target.tagName)
-    })
-    this._deskTop.addEventListener('dragstart', ev => {
-      let tmpElem = ev.path[0]
-      if (tmpElem && tmpElem.tagName === 'DIV' && tmpElem.classList.contains('app-win-bar')) {
-        console.log(ev.path[0])
-        this._moveXdif = parseInt(this._windowOuter.style.left, 10) - ev.clientX
-        this._moveXdif = parseInt(this._windowOuter.style.top, 10) - ev.clientY
+    }
+    this._eventTopMouseDownHandler = ev => {
+      // let tmpElem = ev.path[0]
+      if (ev.target.tagName === 'DIV') {
+        this._tempMoved = ev.target.parentNode
+        this._tempMoved.style.left = '0px'
+        this._tempMoved.style.top = '55px'
+        this._moveXdif = ev.clientX - parseInt(this._tempMoved.style.left, 10)
+        this._moveYdif = ev.clientY - parseInt(this._tempMoved.style.top, 10)
+        document.addEventListener('mousemove', this._eventDocMouseMoveHandler)
+        document.addEventListener('mouseup', this._eventDocMouseUpHandler)
+        console.log(this._tempMoved.style.top)
       }
-    })
+    }
+    this._eventDocMouseMoveHandler = ev => {
+      this._tempMoved.style.left = (ev.clientX - this._moveXdif) + 'px'
+      this._tempMoved.style.top = (ev.clientY - this._moveYdif) + 'px'
+    }
+    this._eventDocMouseUpHandler = ev => {
+    }
+    // this._deskTop.addEventListener('dragstart', ev => {
+    //   let tmpElem = ev.path[0]
+    //   if (tmpElem && tmpElem.tagName === 'DIV' && tmpElem.classList.contains('app-win-bar')) {
+    //     console.log(ev.path[0])
+    //     this._moveXdif = parseInt(this._windowOuter.style.left, 10) - ev.clientX
+    //     this._moveXdif = parseInt(this._windowOuter.style.top, 10) - ev.clientY
+    //   }
+    // })
     // this._deskTop.addEventListener('drop')
+  }
+
+  /**
+   * Attach the desktop's events.
+   */
+  _attachEvents () {
+    // My idea was to let every window handle its own events, but after watching one of the course's
+    // videos, it seems that dispaching the event and handle it here is better (while letting the window
+    // handle it seems more organized)
+    this._deskBar.addEventListener('click', this._eventBarClickHandler)
+    this._deskTop.addEventListener('click', this._eventTopClickHandler)
+    this._deskTop.addEventListener('mousedown', this._eventTopMouseDownHandler)
+    this._deskTop.addEventListener('dragstart', ev => console.log(ev.path[0]))
   }
 
   /**
