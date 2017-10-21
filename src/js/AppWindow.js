@@ -29,7 +29,7 @@ class AppWindow extends window.HTMLElement {
 
   _importHtml () {
     let tmpLink = document.head.querySelector('link[rel="import"][href="/imports/AppWindow.html"]')
-    if (tmpLink) {
+    let tmpConstWin = () => {
       this._windowOuter = tmpLink.import.querySelector('div.app-win').cloneNode(true)
       this._windowBar = this._windowOuter.querySelector('div.app-win-bar')
       this._windowTitle = this._windowOuter.querySelector('div.app-win-title')
@@ -51,34 +51,15 @@ class AppWindow extends window.HTMLElement {
       }
       // this._shadow.appendChild(this._windowOuter)
       this.appendChild(this._windowOuter)
+    }
+    if (tmpLink) {
+      tmpConstWin()
     } else {
       tmpLink = document.createElement('link')
       tmpLink.setAttribute('rel', 'import')
       tmpLink.setAttribute('href', '/imports/AppWindow.html')
       document.head.appendChild(tmpLink)
-      tmpLink.addEventListener('load', () => {
-        this._windowOuter = tmpLink.import.querySelector('div.app-win').cloneNode(true)
-        this._windowBar = this._windowOuter.querySelector('div.app-win-bar')
-        this._windowTitle = this._windowOuter.querySelector('div.app-win-title')
-        this._windowButMin = this._windowOuter.querySelector('a.app-win-min')
-        this._windowButMax = this._windowOuter.querySelector('a.app-win-max')
-        this._windowButClose = this._windowOuter.querySelector('a.app-win-close')
-        this._windowInner = this._windowOuter.querySelector('div.app-win-content')
-        if (this._winApp) {
-          this.windowTitle = this._winApp.appName
-          this._windowInner.appendChild(this._winApp)
-        }
-        if (this._title) {
-          this.windowTitle = this._title
-        }
-        if (this._tempNewSize) {
-          this._windowInner.style.width = this._tempNewSize.width + 'px'
-          this._windowInner.style.height = this._tempNewSize.height + 'px'
-          this._tempNewSize = null
-        }
-        // this._shadow.appendChild(this._windowOuter)
-        this.appendChild(this._windowOuter)
-      })
+      tmpLink.addEventListener('load', tmpConstWin)
     }
   }
 

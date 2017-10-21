@@ -1,5 +1,6 @@
 body {
   margin: 0px;
+  overflow: hidden;
 }
 
 /* This one is recommended by some site */

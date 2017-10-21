@@ -44,46 +44,49 @@ class WebDesktop extends window.HTMLElement {
       }
     }
     this._eventTopClickHandler = ev => { // Here, due to the shadow-dom, I couldn't use ev.target as expected (luckily I found this solution)
-      let tmpElem = ev.path[0]
-      if (tmpElem && tmpElem.tagName === 'A') {
-        if (tmpElem.classList.contains('app-win-close')) {
-          this._deskTop.removeChild(ev.target)
-        } else if (tmpElem.classList.contains('app-win-max')) {
-        } else if (tmpElem.classList.contains('app-win-min')) {
+      if (ev.target.tagName === 'A') {
+        if (ev.target.classList.contains('app-win-close')) {
+          this._deskTop.removeChild(ev.path[4]) // The fourth parent
+        } else if (ev.target.classList.contains('app-win-max')) { // Hope I can continue these
+        } else if (ev.target.classList.contains('app-win-min')) {
         }
       }
-      // console.log(ev.path[0].classList.contains('app-win-title'))
-      // console.log(ev.path[1])
-      // console.log(ev.target.tagName)
     }
     this._eventTopMouseDownHandler = ev => {
       // let tmpElem = ev.path[0]
       if (ev.target.tagName === 'DIV') {
         this._tempMoved = ev.target.parentNode
-        this._tempMoved.style.left = '0px'
-        this._tempMoved.style.top = '55px'
+        if (!this._tempMoved.style.left) {
+          this._tempMoved.style.left = '0px'
+        }
+        if (!this._tempMoved.style.top) {
+          this._tempMoved.style.top = '55px'
+        }
         this._moveXdif = ev.clientX - parseInt(this._tempMoved.style.left, 10)
         this._moveYdif = ev.clientY - parseInt(this._tempMoved.style.top, 10)
-        document.addEventListener('mousemove', this._eventDocMouseMoveHandler)
+        this._tempMoved.style.opacity = 0.5
+        // document.addEventListener('mousemove', this._eventDocMouseMoveHandler)
+        this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler) // This is betterto let the '_deskTop' handle it
         document.addEventListener('mouseup', this._eventDocMouseUpHandler)
-        console.log(this._tempMoved.style.top)
       }
     }
-    this._eventDocMouseMoveHandler = ev => {
-      this._tempMoved.style.left = (ev.clientX - this._moveXdif) + 'px'
-      this._tempMoved.style.top = (ev.clientY - this._moveYdif) + 'px'
+    this._eventTopMouseMoveHandler = ev => {
+      if (this._tempMoved) {
+        this._tempMoved.style.left = (ev.clientX - this._moveXdif) + 'px'
+        this._tempMoved.style.top = (ev.clientY - this._moveYdif) + 'px'
+      }
     }
     this._eventDocMouseUpHandler = ev => {
+      if (this._tempMoved) {
+        // document.removeEventListener('mousemove', this._eventDocMouseMoveHandler)
+        this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler)
+        document.removeEventListener('mouseup', this._eventDocMouseUpHandler)
+        this._tempMoved.style.opacity = 1
+        this._moveXdif = 0
+        this._moveYdif = 0
+        this._tempMoved = null
+      }
     }
-    // this._deskTop.addEventListener('dragstart', ev => {
-    //   let tmpElem = ev.path[0]
-    //   if (tmpElem && tmpElem.tagName === 'DIV' && tmpElem.classList.contains('app-win-bar')) {
-    //     console.log(ev.path[0])
-    //     this._moveXdif = parseInt(this._windowOuter.style.left, 10) - ev.clientX
-    //     this._moveXdif = parseInt(this._windowOuter.style.top, 10) - ev.clientY
-    //   }
-    // })
-    // this._deskTop.addEventListener('drop')
   }
 
   /**
@@ -96,7 +99,6 @@ class WebDesktop extends window.HTMLElement {
     this._deskBar.addEventListener('click', this._eventBarClickHandler)
     this._deskTop.addEventListener('click', this._eventTopClickHandler)
     this._deskTop.addEventListener('mousedown', this._eventTopMouseDownHandler)
-    this._deskTop.addEventListener('dragstart', ev => console.log(ev.path[0]))
   }
 
   /**
