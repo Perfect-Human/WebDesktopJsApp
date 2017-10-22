@@ -2,6 +2,7 @@ class WebDesktop extends window.HTMLElement {
   constructor () {
     super()
     this._apps = new Array(0)
+    this._windows = new Array(0)
     this.createdCallback()
   }
 
@@ -33,20 +34,24 @@ class WebDesktop extends window.HTMLElement {
    */
   _prepareEvents () {
     this._eventBarClickHandler = ev => {
-      switch (ev.target.tagName) {
-        case 'A':
-          let tmpWin = new this._WindowClass(ev.target.ApplicationClass.appName)
-          let TmpApp = ev.target.ApplicationClass
-          tmpWin.windowApp = new TmpApp()
-          this._deskTop.appendChild(tmpWin)
-          tmpWin.changeSize(TmpApp.defaultAppSize)
-          break
+      if (ev.target.tagName === 'A') {
+        let TmpApp = ev.target.ApplicationClass
+        // let tmpWin = new this._WindowClass(TmpApp.appName)
+        let tmpWin = new this._WindowClass()
+        tmpWin.windowApp = new TmpApp()
+        this._deskTop.appendChild(tmpWin)
+        if (this._windows.length === 0) {
+          this._windows.push(tmpWin)
+        } else {
+          this._putWinOnTop(tmpWin)
+        }
+        tmpWin.changeSize(TmpApp.defaultAppSize)
       }
     }
-    this._eventTopClickHandler = ev => { // Here, due to the shadow-dom, I couldn't use ev.target as expected (luckily I found this solution)
+    this._eventTopClickHandler = ev => {
       if (ev.target.tagName === 'A') {
         if (ev.target.classList.contains('app-win-close')) {
-          this._deskTop.removeChild(ev.path[4]) // The fourth parent
+          this._closeWin(ev.path[4]) // The fourth parent
         } else if (ev.target.classList.contains('app-win-max')) { // Hope I can continue these
         } else if (ev.target.classList.contains('app-win-min')) {
         }
@@ -54,19 +59,28 @@ class WebDesktop extends window.HTMLElement {
     }
     this._eventTopMouseDownHandler = ev => {
       // let tmpElem = ev.path[0]
-      if (ev.target.tagName === 'DIV') {
+
+      for (let i = 0; i < ev.path.length; i++) {
+        if (!ev.path[i].classList) {
+          return // If we reach here then no need to handle anymore (the desktop is clicked, and the index is the shadow)
+        } else if (ev.path[i].tagName === 'MY-APP-WINDOW') {
+          this._putWinOnTop(ev.path[i])
+          break
+        }
+      }
+      if (ev.target.tagName === 'DIV' && ev.target.classList.contains('app-win-bar')) {
+        // console.log(ev.target)
         this._tempMoved = ev.target.parentNode
         if (!this._tempMoved.style.left) {
           this._tempMoved.style.left = '0px'
         }
         if (!this._tempMoved.style.top) {
-          this._tempMoved.style.top = '55px'
+          this._tempMoved.style.top = '0px'
         }
         this._moveXdif = ev.clientX - parseInt(this._tempMoved.style.left, 10)
         this._moveYdif = ev.clientY - parseInt(this._tempMoved.style.top, 10)
         this._tempMoved.style.opacity = 0.5
-        // document.addEventListener('mousemove', this._eventDocMouseMoveHandler)
-        this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler) // This is betterto let the '_deskTop' handle it
+        this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler) // It is better to let the '_deskTop' and not the 'document' to handle it
         document.addEventListener('mouseup', this._eventDocMouseUpHandler)
       }
     }
@@ -78,7 +92,6 @@ class WebDesktop extends window.HTMLElement {
     }
     this._eventDocMouseUpHandler = ev => {
       if (this._tempMoved) {
-        // document.removeEventListener('mousemove', this._eventDocMouseMoveHandler)
         this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler)
         document.removeEventListener('mouseup', this._eventDocMouseUpHandler)
         this._tempMoved.style.opacity = 1
@@ -102,12 +115,50 @@ class WebDesktop extends window.HTMLElement {
   }
 
   /**
+   * Puts a window on top of all other windows (or add it to the other windows and put it on top)
+   * @param {*} theWindow the window to be put on top (or added)
+   */
+  _putWinOnTop (theWindow) {
+    let tmpIndex = this._windows.findIndex(elem => elem === theWindow)
+    if (tmpIndex > -1) {
+      theWindow.lastElementChild.style.zIndex = this._windows[this._windows.length - 1].lastElementChild.style.zIndex
+      for (let i = tmpIndex + 1; i < this._windows.length; i++) {
+        this._windows[i].lastElementChild.style.zIndex = parseInt(this._windows[i].lastElementChild.style.zIndex, 10) - 1
+      }
+      this._windows.sort(this._compareWin)
+    } else {
+      theWindow.lastElementChild.style.zIndex = 100 + this._windows.length
+      this._windows.push(theWindow)
+    }
+  }
+
+  /**
+   * A window comparere used to sort windows.
+   * @param {*} win1 first window to compare
+   * @param {*} win2 second window to compare
+   */
+  _compareWin (win1, win2) {
+    return parseInt(win1.lastElementChild.style.zIndex, 10) - parseInt(win2.lastElementChild.style.zIndex, 10)
+  }
+
+  /**
+   * Closes the window.
+   * @param {*} theWindow
+   */
+  _closeWin (theWindow) {
+    if (this._windows[this._windows.length - 1] !== theWindow) {
+      this._putWinOnTop(theWindow)
+    }
+    this._windows.pop()
+    this._deskTop.removeChild(theWindow)
+  }
+
+  /**
    * Adds an app to put inside the window.
    * @param {*} AppClass the class for the application to be put in the window
    */
   addApp (AppClass) {
     let tmpIcon = document.createElement('a')
-    // tmpIcon.setAttribute('href', '#app' + this._apps.length)
     tmpIcon.setAttribute('href', 'javascript:')
     tmpIcon.classList.add('desk-icon')
     tmpIcon.style.backgroundImage = 'url("' + AppClass.appIconURL + '")'

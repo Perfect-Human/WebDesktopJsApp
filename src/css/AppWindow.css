@@ -1,10 +1,12 @@
 .app-win {
   position: absolute;
-  border-style: solid;
+  z-index: 100;
+  border-style: double;
   background-color: aliceblue;
   margin-top: 1px;
   margin-left: 1px;
-  top: 55px;
+  left: 0px;
+  top: 0px;
   /* opacity: .5; */
 }
 

@@ -1,6 +1,6 @@
-// I canceled the use of Shadow DOM here because it caused me many limitations when
-// dealing with events. I tried using 'event.path[]' but there are still many
-// constrictions due to Shadow DOM features (but I learned more about it anyway)
+// I canceled the use of Shadow DOM here (but it is still used in 'WebDesktop.js') because it
+// caused me many limitations when dealing with events. I tried using 'event.path[]' but there
+// are still many constrictions due to Shadow DOM features (but I learned more about it anyway)
 
 /**
  * A class that represents a window that can contain an application
@@ -37,9 +37,9 @@ class AppWindow extends window.HTMLElement {
       this._windowButMax = this._windowOuter.querySelector('a.app-win-max')
       this._windowButClose = this._windowOuter.querySelector('a.app-win-close')
       this._windowInner = this._windowOuter.querySelector('div.app-win-content')
+      this._windowIcon = this._windowOuter.querySelector('img.app-win-icon')
       if (this._winApp) {
-        this.windowTitle = this._winApp.appName
-        this._windowInner.appendChild(this._winApp)
+        this.windowApp = this._winApp
       }
       if (this._title) {
         this.windowTitle = this._title
@@ -62,19 +62,6 @@ class AppWindow extends window.HTMLElement {
       tmpLink.addEventListener('load', tmpConstWin)
     }
   }
-
-  // _assignEvents () {
-  //   this._eventDragStart = ev => {
-  //     this._moveXdif = parseInt(this._windowOuter.style.left, 10) - ev.clientX
-  //     this._moveXdif = parseInt(this._windowOuter.style.top, 10) - ev.clientY
-  //   }
-  //   this._windowBar.addEventListener('mousemove', ev => {
-  //   })
-  //   this._windowTitle.addEventListener('click', ev => {
-  //     ev.preventDefault()
-  //     // console.log(ev.target.tagName)
-  //   })
-  // }
 
   /**
    * Force a change of the window size.
@@ -102,8 +89,15 @@ class AppWindow extends window.HTMLElement {
   set windowApp (winApp) {
     this._winApp = winApp
     if (this._windowInner) {
-      this.windowTitle = winApp.appName
-      this._windowInner.appendChild(winApp)
+      if (this._windowInner.firstElementChild && this._windowInner.firstElementChild !== winApp) {
+        this.windowTitle = winApp.constructor.appName
+        this._windowIcon.setAttribute('src', winApp.constructor.appIconURL)
+        this._windowInner.replaceChild(winApp, this._windowInner.firstElementChild)
+      } else if (!this._windowInner.firstElementChild) {
+        this.windowTitle = winApp.constructor.appName
+        this._windowIcon.setAttribute('src', winApp.constructor.appIconURL)
+        this._windowInner.appendChild(winApp)
+      }
     }
   }
 
