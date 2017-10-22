@@ -79,7 +79,7 @@ class WebDesktop extends window.HTMLElement {
         }
         this._moveXdif = ev.clientX - parseInt(this._tempMoved.style.left, 10)
         this._moveYdif = ev.clientY - parseInt(this._tempMoved.style.top, 10)
-        this._tempMoved.style.opacity = 0.5
+        this._tempMoved.parentNode.isTransparent = true
         this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler) // It is better to let the '_deskTop' and not the 'document' to handle it
         document.addEventListener('mouseup', this._eventDocMouseUpHandler)
       }
@@ -94,7 +94,7 @@ class WebDesktop extends window.HTMLElement {
       if (this._tempMoved) {
         this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler)
         document.removeEventListener('mouseup', this._eventDocMouseUpHandler)
-        this._tempMoved.style.opacity = 1
+        this._tempMoved.parentNode.isTransparent = false
         this._moveXdif = 0
         this._moveYdif = 0
         this._tempMoved = null
@@ -120,6 +120,8 @@ class WebDesktop extends window.HTMLElement {
    */
   _putWinOnTop (theWindow) {
     let tmpIndex = this._windows.findIndex(elem => elem === theWindow)
+    this._windows[this._windows.length - 1].isActive = false
+    theWindow.isActive = true
     if (tmpIndex > -1) {
       theWindow.lastElementChild.style.zIndex = this._windows[this._windows.length - 1].lastElementChild.style.zIndex
       for (let i = tmpIndex + 1; i < this._windows.length; i++) {

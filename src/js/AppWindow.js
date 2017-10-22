@@ -114,6 +114,42 @@ class AppWindow extends window.HTMLElement {
   set windowTitle (newTitle) {
     this._windowTitle.textContent = newTitle
   }
+
+  /**
+   * Specifies if the window is the active on-top window.
+   */
+  get isActive () {
+    return !this._windowOuter.classList.contains('app-inactive')
+  }
+
+  /**
+   * Specifies if the window is the active on-top window.
+   */
+  set isActive (newIsActive) {
+    if (newIsActive) {
+      this._windowOuter.classList.remove('app-inactive')
+    } else {
+      this._windowOuter.classList.add('app-inactive')
+    }
+  }
+
+  /**
+   * Specifies if the window is transparent (can be set when moving).
+   */
+  get isTransparent () {
+    return this._windowOuter.classList.contains('app-transp')
+  }
+
+  /**
+   * Specifies if the window is transparent (can be set when moving).
+   */
+  set isTransparent (newIsTransparent) {
+    if (newIsTransparent) {
+      this._windowOuter.classList.add('app-transp')
+    } else {
+      this._windowOuter.classList.remove('app-transp')
+    }
+  }
 }
 
 window.customElements.define('my-app-window', AppWindow)
