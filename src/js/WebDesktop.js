@@ -57,7 +57,7 @@ class WebDesktop extends window.HTMLElement {
       if (ev.target.tagName === 'A') {
         if (ev.target.classList.contains('app-win-close')) {
           this._closeWin(ev.path[4]) // The fourth parent
-        } else if (ev.target.classList.contains('app-win-max')) { // Hope I can continue these
+        } else if (ev.target.classList.contains('app-win-max')) {
           // if (this._moveXdif === -9999 && this._moveYdif === -9999 && this._oldWidth === -9999 && this._oldHeight === -9999) { // Check if a resize has happened since last maximize
           if (this._oldWidth === -9999) {
             this._moveXdif = ev.path[4].windowLeft
@@ -73,7 +73,7 @@ class WebDesktop extends window.HTMLElement {
             ev.path[4].windowInsideHeight = this._oldHeight
             this._moveXdif = this._moveYdif = this._oldWidth = this._oldHeight = -9999
           }
-        } else if (ev.target.classList.contains('app-win-min')) {
+        } else if (ev.target.classList.contains('app-win-min')) { // Hope I can continue this
         }
       }
     }
