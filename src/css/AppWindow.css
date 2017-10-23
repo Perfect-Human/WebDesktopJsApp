@@ -36,7 +36,6 @@
   background-color: burlywood;
   width: 100%;
   height: 2em;
-  /* vertical-align: middle; */
   line-height: 2em;
   user-select: none;
   cursor: move;
@@ -74,4 +73,44 @@
   min-width: 300px;
   min-height: 300px;
   overflow-y: scroll;
+}
+
+.app-win-topedge {
+  position: absolute;
+  /* background-color: red; */
+  top: 0px;
+  right: 0px;
+  left: 0px;
+  height: 4px;
+  cursor: ns-resize;
+}
+
+.app-win-rightedge {
+  position: absolute;
+  /* background-color: red; */
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  width: 4px;
+  cursor: ew-resize;
+}
+
+.app-win-botedge {
+  position: absolute;
+  /* background-color: red; */
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  height: 4px;
+  cursor: ns-resize;
+}
+
+.app-win-leftedge {
+  position: absolute;
+  /* background-color: red; */
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  width: 4px;
+  cursor: ew-resize;
 }

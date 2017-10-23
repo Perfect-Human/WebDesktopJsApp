@@ -8,6 +8,10 @@
 class AppWindow extends window.HTMLElement {
   constructor (theTitle) {
     super()
+    this._tempNewX = -9999
+    this._tempNewY = -9999
+    this._tempNewRight = -9999
+    this._tempNewBottom = -9999
     if (theTitle) {
       this._title = theTitle
     }
@@ -47,7 +51,25 @@ class AppWindow extends window.HTMLElement {
       if (this._tempNewSize) {
         this._windowInner.style.width = this._tempNewSize.width + 'px'
         this._windowInner.style.height = this._tempNewSize.height + 'px'
+        // this._windowOuter.style.width = (this._tempNewSize.width + 2) + 'px'
+        // this._windowOuter.style.height = (this._tempNewSize.width + 52) + 'px'
         this._tempNewSize = null
+      }
+      if (this._tempNewX > -9999) {
+        this._windowOuter.style.left = this._tempNewX + 'px'
+        this._tempNewX = -9999
+      }
+      if (this._tempNewY > -9999) {
+        this._windowOuter.style.top = this._tempNewY + 'px'
+        this._tempNewY = -9999
+      }
+      if (this._tempNewRight > -9999) {
+        this._windowOuter.style.right = this._tempNewRight + 'px'
+        this._tempNewRight = -9999
+      }
+      if (this._tempNewBottom > -9999) {
+        this._windowOuter.style.bottom = this._tempNewBottom + 'px'
+        this._tempNewBottom = -9999
       }
       // this._shadow.appendChild(this._windowOuter)
       this.appendChild(this._windowOuter)
@@ -71,8 +93,131 @@ class AppWindow extends window.HTMLElement {
     if (this._windowInner) {
       this._windowInner.style.width = newSizeObj.width + 'px'
       this._windowInner.style.height = newSizeObj.height + 'px'
+      // this._windowOuter.style.width = (newSizeObj.width + 2) + 'px'
+      // this._windowOuter.style.height = (newSizeObj.width + 52) + 'px'
     } else {
       this._tempNewSize = newSizeObj
+    }
+  }
+
+  /**
+   * Force a change of the window size.
+   * @param {*} newPosObj an object with new position data: '{x: 10, y: 10}'
+   */
+  // changePosition (newPosObj) {
+  changePosition (newX, newY) {
+    if (this._windowOuter) {
+      this._windowOuter.style.left = newX + 'px'
+      this._windowOuter.style.top = newY + 'px'
+    } else {
+      this._tempNewX = newX
+      this._tempNewY = newY
+    }
+  }
+
+  /**
+   * The top of the window
+   */
+  get windowTop () {
+    return parseInt(this._windowOuter.style.top, 10)
+  }
+
+  /**
+   * The top of the window
+   */
+  set windowTop (newTop) {
+    if (this._windowOuter) {
+      this._windowOuter.style.top = newTop + 'px'
+    } else {
+      this._tempNewY = newTop
+    }
+  }
+
+  /**
+   * The right of the window
+   */
+  get windowRight () {
+    return parseInt(this._windowOuter.style.right, 10)
+  }
+
+  /**
+   * The right of the window
+   */
+  set windowRight (newRight) {
+    if (this._windowOuter) {
+      this._windowOuter.style.right = newRight + 'px'
+    } else {
+      this._tempNewRight = newRight
+    }
+  }
+
+  /**
+   * The bottom of the window
+   */
+  get windowBottom () {
+    return parseInt(this._windowOuter.style.bottom, 10)
+  }
+
+  /**
+   * The bottom of the window
+   */
+  set windowBottom (newBottom) {
+    if (this._windowOuter) {
+      this._windowOuter.style.bottom = newBottom + 'px'
+    } else {
+      this._tempNewBottom = newBottom
+    }
+  }
+
+  /**
+   * The left of the window
+   */
+  get windowLeft () {
+    return parseInt(this._windowOuter.style.left, 10)
+  }
+
+  /**
+   * The left of the window
+   */
+  set windowLeft (newLeft) {
+    if (this._windowOuter) {
+      this._windowOuter.style.left = newLeft + 'px'
+    } else {
+      this._tempNewX = newLeft
+    }
+  }
+
+  /**
+   * The width of the inside window
+   */
+  get windowInsideWidth () {
+    return parseInt(this._windowInner.style.width, 10)
+  }
+
+  /**
+   * The width of the inside window
+   */
+  set windowInsideWidth (newWidth) {
+    // if (newWidth > parseInt(this._windowInner.style.minWidth, 10)) { // It does not read CSS content
+    if (newWidth > 300) {
+      this._windowInner.style.width = newWidth + 'px'
+    }
+  }
+
+  /**
+   * The height of the inside window
+   */
+  get windowInsideHeight () {
+    return parseInt(this._windowInner.style.height, 10)
+  }
+
+  /**
+   * The height of the inside window
+   */
+  set windowInsideHeight (newHeight) {
+    // if (newHeight > parseInt(this._windowInner.style.minHeight, 10)) { // It does not read CSS content
+    if (newHeight > 300) {
+      this._windowInner.style.height = newHeight + 'px'
     }
   }
 

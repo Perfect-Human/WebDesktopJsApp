@@ -1,8 +1,10 @@
 class WebDesktop extends window.HTMLElement {
   constructor () {
     super()
+    this._moveXdif = this._moveYdif = this._oldWidth = this._oldHeight = -9999
     this._apps = new Array(0)
     this._windows = new Array(0)
+    this._nextWinX = this._nextWinY = 10
     this.createdCallback()
   }
 
@@ -46,6 +48,9 @@ class WebDesktop extends window.HTMLElement {
           this._putWinOnTop(tmpWin)
         }
         tmpWin.changeSize(TmpApp.defaultAppSize)
+        tmpWin.changePosition(this._nextWinX, this._nextWinY)
+        this._nextWinX = (this._nextWinX + 20) % (this._deskTop.clientWidth / 3 * 2)
+        this._nextWinY = (this._nextWinY + 10) % (this._deskTop.clientHeight / 3 * 2)
       }
     }
     this._eventTopClickHandler = ev => {
@@ -53,51 +58,121 @@ class WebDesktop extends window.HTMLElement {
         if (ev.target.classList.contains('app-win-close')) {
           this._closeWin(ev.path[4]) // The fourth parent
         } else if (ev.target.classList.contains('app-win-max')) { // Hope I can continue these
+          // if (this._moveXdif === -9999 && this._moveYdif === -9999 && this._oldWidth === -9999 && this._oldHeight === -9999) { // Check if a resize has happened since last maximize
+          if (this._oldWidth === -9999) {
+            this._moveXdif = ev.path[4].windowLeft
+            this._moveYdif = ev.path[4].windowTop
+            this._oldWidth = ev.path[4].windowInsideWidth
+            this._oldHeight = ev.path[4].windowInsideHeight
+            ev.path[4].changePosition(0, 0)
+            ev.path[4].windowInsideWidth = this._deskTop.clientWidth - 5
+            ev.path[4].windowInsideHeight = this._deskTop.clientHeight - 40
+          } else {
+            ev.path[4].changePosition(this._moveXdif, this._moveYdif)
+            ev.path[4].windowInsideWidth = this._oldWidth
+            ev.path[4].windowInsideHeight = this._oldHeight
+            this._moveXdif = this._moveYdif = this._oldWidth = this._oldHeight = -9999
+          }
         } else if (ev.target.classList.contains('app-win-min')) {
         }
       }
     }
     this._eventTopMouseDownHandler = ev => {
       // let tmpElem = ev.path[0]
-
       for (let i = 0; i < ev.path.length; i++) {
-        if (!ev.path[i].classList) {
-          return // If we reach here then no need to handle anymore (the desktop is clicked, and the index is the shadow)
-        } else if (ev.path[i].tagName === 'MY-APP-WINDOW') {
+        if (ev.path[i].tagName === 'MY-APP-WINDOW') {
           this._putWinOnTop(ev.path[i])
           break
         }
       }
-      if (ev.target.tagName === 'DIV' && ev.target.classList.contains('app-win-bar')) {
-        // console.log(ev.target)
-        this._tempMoved = ev.target.parentNode
-        if (!this._tempMoved.style.left) {
-          this._tempMoved.style.left = '0px'
+      if (ev.target.tagName === 'DIV') {
+        if (this._oldWidth === -9999) { // Check if the window is maximized
+          if (ev.target.classList.contains('app-win-bar')) { // The title bar is grabbed
+            this._tempMoved = ev.target.parentNode
+            this._moveXdif = ev.clientX - parseInt(this._tempMoved.style.left, 10)
+            this._moveYdif = ev.clientY - parseInt(this._tempMoved.style.top, 10)
+            this._tempMoved.parentNode.isTransparent = true
+          } else if (ev.target.classList.contains('app-win-topedge')) { // The top edge is grabbed
+            this._tempTopEdge = ev.target.parentNode
+            this._moveYdif = ev.clientY // We'll use that again
+            this._tempTopEdge.parentNode.isTransparent = true
+          } else if (ev.target.classList.contains('app-win-rightedge')) { // The right edge is grabbed
+            this._tempRightEdge = ev.target.parentNode
+            this._moveXdif = ev.clientX
+          } else if (ev.target.classList.contains('app-win-botedge')) { // The bottom edge is grabbed
+            this._tempBotEdge = ev.target.parentNode
+            this._moveYdif = ev.clientY
+          } else if (ev.target.classList.contains('app-win-leftedge')) { // The left edge is grabbed
+            this._tempLeftEdge = ev.target.parentNode
+            this._moveXdif = ev.clientX
+          }
+          this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler) // It is better to let the '_deskTop' and not the 'document' to handle it
+          document.addEventListener('mouseup', this._eventDocMouseUpHandler)
         }
-        if (!this._tempMoved.style.top) {
-          this._tempMoved.style.top = '0px'
-        }
-        this._moveXdif = ev.clientX - parseInt(this._tempMoved.style.left, 10)
-        this._moveYdif = ev.clientY - parseInt(this._tempMoved.style.top, 10)
-        this._tempMoved.parentNode.isTransparent = true
-        this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler) // It is better to let the '_deskTop' and not the 'document' to handle it
-        document.addEventListener('mouseup', this._eventDocMouseUpHandler)
       }
     }
     this._eventTopMouseMoveHandler = ev => {
-      if (this._tempMoved) {
-        this._tempMoved.style.left = (ev.clientX - this._moveXdif) + 'px'
-        this._tempMoved.style.top = (ev.clientY - this._moveYdif) + 'px'
+      if (this._tempMoved) { // This is for moving
+        this._tempMoved.parentNode.windowLeft = ev.clientX - this._moveXdif
+        this._tempMoved.parentNode.windowTop = ev.clientY - this._moveYdif
+      } else if (this._tempTopEdge) { // This is for top resizing
+        let tmpDif = ev.clientY - this._moveYdif
+        let tmpHt = this._tempTopEdge.parentNode.windowInsideHeight
+        this._tempTopEdge.parentNode.windowInsideHeight -= tmpDif
+        if (this._tempTopEdge.parentNode.windowInsideHeight !== tmpHt) { // To avoid height limits
+          this._moveYdif = ev.clientY
+          this._tempTopEdge.parentNode.windowTop += tmpDif
+        }
+      } else if (this._tempRightEdge) { // This is for right resizing
+        let tmpDif = ev.clientX - this._moveXdif
+        let tmpWd = this._tempRightEdge.parentNode.windowInsideWidth
+        this._tempRightEdge.parentNode.windowInsideWidth += tmpDif
+        if (this._tempRightEdge.parentNode.windowInsideWidth !== tmpWd) { // To avoid width limits
+          this._moveXdif = ev.clientX
+          this._tempRightEdge.parentNode.windowRight -= tmpDif
+        }
+      } else if (this._tempBotEdge) { // This is for bottom resizing
+        let tmpDif = ev.clientY - this._moveYdif
+        let tmpHt = this._tempBotEdge.parentNode.windowInsideHeight
+        this._tempBotEdge.parentNode.windowInsideHeight += tmpDif
+        if (this._tempBotEdge.parentNode.windowInsideHeight !== tmpHt) { // To avoid height limits
+          this._moveYdif = ev.clientY
+          this._tempBotEdge.parentNode.windowBottom -= tmpDif
+        }
+      } else if (this._tempLeftEdge) { // This is for right resizing
+        let tmpDif = ev.clientX - this._moveXdif
+        let tmpWd = this._tempLeftEdge.parentNode.windowInsideWidth
+        this._tempLeftEdge.parentNode.windowInsideWidth -= tmpDif
+        if (this._tempLeftEdge.parentNode.windowInsideWidth !== tmpWd) { // To avoid width limits
+          this._moveXdif = ev.clientX
+          this._tempLeftEdge.parentNode.windowLeft += tmpDif
+        }
       }
     }
     this._eventDocMouseUpHandler = ev => {
+      this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler)
+      document.removeEventListener('mouseup', this._eventDocMouseUpHandler)
       if (this._tempMoved) {
-        this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler)
-        document.removeEventListener('mouseup', this._eventDocMouseUpHandler)
         this._tempMoved.parentNode.isTransparent = false
-        this._moveXdif = 0
-        this._moveYdif = 0
-        this._tempMoved = null
+        this._moveXdif = -9999
+        this._moveYdif = -9999
+        this._tempMoved = null // to indicate move end
+      } else if (this._tempTopEdge) {
+        this._tempTopEdge.parentNode.isTransparent = false
+        this._moveYdif = -9999
+        this._tempTopEdge = null
+      } else if (this._tempRightEdge) {
+        this._tempRightEdge.parentNode.isTransparent = false
+        this._moveXdif = -9999
+        this._tempRightEdge = null
+      } else if (this._tempBotEdge) {
+        this._tempBotEdge.parentNode.isTransparent = false
+        this._moveYdif = -9999
+        this._tempBotEdge = null
+      } else if (this._tempLeftEdge) {
+        this._tempLeftEdge.parentNode.isTransparent = false
+        this._moveXdif = -9999
+        this._tempLeftEdge = null
       }
     }
   }
