@@ -6,12 +6,22 @@ const THE_CHAT_PROTS = 'secure'
 const THE_CHAT_API_KEY = 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
 const THE_CHAT_CHANNEL = 'secure'
 const THE_CHAT_HIST_LIMIT = 30
+const THE_STORAGE_HIST_KEY = 'CHAT_HIST'
+const THE_STORAGE_USER_KEY = 'CHAT_USER'
 
 class ChatApp extends window.HTMLElement {
   constructor () {
     super()
-    this._userName = ''
-    this._chatRecord = new Array(0)
+    if (window.localStorage.length) {
+      this._chatRecord = JSON.parse(window.localStorage.getItem(THE_STORAGE_HIST_KEY))
+      this._userName = window.localStorage.getItem(THE_STORAGE_USER_KEY)
+    } else {
+      this._chatRecord = new Array(0)
+      this._userName = ''
+      window.localStorage.setItem(THE_STORAGE_HIST_KEY, '[]')
+      window.localStorage.setItem(THE_STORAGE_USER_KEY, '')
+    }
+    this._isNewChat = true // Used to specify the first send
     this.createdCallback()
   }
 
@@ -45,6 +55,7 @@ class ChatApp extends window.HTMLElement {
         }
       })
       this._chatHistory.appendChild(this._createChatBubble('Starting a new chat', 'Please enter the user name for the chat.'))
+      this._chatTextBox.value = this._userName
     }
     if (tmpLink) { // Check if the link is already on the page
       tmpConstWin()
@@ -62,12 +73,17 @@ class ChatApp extends window.HTMLElement {
    */
   _sendChat () {
     if (this._chatTextBox.value) {
-      if (this._userName) { // Used to check if the user is logged in to chat or not
-        this._srvCom.sendData(this._MessageFactory(this._chatTextBox.value))
-      } else {
+      if (this._isNewChat) { // Used to check if the user is logged in to chat yet or not
         this._userName = this._chatTextBox.value
+        window.localStorage.setItem(THE_STORAGE_USER_KEY, this._chatTextBox.value)
         this._chatHistory.removeChild(this._chatHistory.firstElementChild)
+        for (let i = 0; i < this._chatRecord.length; i++) {
+          this._chatHistory.appendChild(this._createChatBubble(this._chatRecord[i].username + ' wrote:', this._chatRecord[i].data, this._chatRecord[i].username === this._userName))
+        }
         this._srvCom.sendData(this._MessageFactory(this._userName + ' joined the chat'))
+        this._isNewChat = false
+      } else {
+        this._srvCom.sendData(this._MessageFactory(this._chatTextBox.value))
       }
       this._chatTextBox.value = ''
     }
@@ -97,6 +113,7 @@ class ChatApp extends window.HTMLElement {
     switch (tmpData.type) {
       case 'message':
         this._chatHistory.appendChild(this._createChatBubble(tmpData.username + ' wrote:', tmpData.data, tmpData.username === this._userName))
+        this._addToChatHistory(tmpData)
         this._chatHistory.scrollTop = this._chatHistory.scrollHeight
         break
       case 'notification':
@@ -111,6 +128,7 @@ class ChatApp extends window.HTMLElement {
       this._chatRecord.shift()
       this._chatHistory.removeChild(this._chatHistory.firstElementChild)
     }
+    window.localStorage.setItem(THE_STORAGE_HIST_KEY, JSON.stringify(this._chatRecord))
   }
 
   endApp () {
