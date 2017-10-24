@@ -8,6 +8,7 @@ const THE_CHAT_CHANNEL = 'secure'
 const THE_CHAT_HIST_LIMIT = 30
 const THE_STORAGE_HIST_KEY = 'CHAT_HIST'
 const THE_STORAGE_USER_KEY = 'CHAT_USER'
+const THE_IS_BASE64_ENC = false
 
 class ChatApp extends window.HTMLElement {
   constructor () {
@@ -82,6 +83,9 @@ class ChatApp extends window.HTMLElement {
         this._srvCom.sendData(this._MessageFactory(this._userName + ' joined the chat'))
         this._isNewChat = false
       } else {
+        if (THE_IS_BASE64_ENC) {
+          this._chatTextBox.value = window.btoa(this._chatTextBox.value)
+        }
         this._srvCom.sendData(this._MessageFactory(this._chatTextBox.value))
       }
       this._chatTextBox.value = ''
