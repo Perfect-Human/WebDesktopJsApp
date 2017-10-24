@@ -6,16 +6,16 @@ const THE_APP_NAME = 'Memory Game'
 class GameMemory extends window.HTMLElement {
   constructor (cardCount) {
     super()
-    this.meCardCount = cardCount && Number.isInteger(cardCount) && cardCount > 3 && cardCount < 17 ? cardCount : 16
-    this.meCounter = 0
+    this.meCardCount = this.meCardCount && Number.isInteger(this.meCardCount) && this.meCardCount > 3 && this.meCardCount < 17 ? this.meCardCount : 8
     this.createdCallback()
   }
 
   createdCallback () {
+    this.meCounter = 0
     this.GameCard = require('./GameCard')
     let tmpStyle = document.createElement('link')
     let tmpLeg = document.createElement('legend')
-    this.meShadow = this.attachShadow({mode: 'open'})
+    if (!this.meShadow) this.meShadow = this.attachShadow({mode: 'open'})
     this.mePlayBoard = document.createElement('fieldset')
     this.meMatchBoard = document.createElement('fieldset')
     this.meScoreBoard = document.createElement('fieldset')
@@ -61,6 +61,37 @@ class GameMemory extends window.HTMLElement {
     this.meScoreBoard.innerText = '0'
     this.meShadow.appendChild(this.mePlayBoard)
     this.meShadow.appendChild(this.meMatchBoard)
+    this._addControlBoard()
+  }
+
+  /**
+   * // This method is for adding the game control board (added later and damn it's hard when not planned)
+   */
+  _addControlBoard () {
+    let tmpImport = document.head.querySelector('link[rel="import"][href="/imports/GameMemory.html"]')
+    let tmpBoard
+    let tmpConstWin = () => { // Used to construct initial window window
+      tmpBoard = tmpImport.import.getElementById('control-board').cloneNode(true)
+      let tmpBut = tmpBoard.querySelector('#game-start-but')
+      let tmpChoice = tmpBoard.querySelector('#game-choice')
+      tmpBut.addEventListener('click', () => {
+        while (this.meShadow.lastChild) {
+          this.meShadow.removeChild(this.meShadow.lastChild)
+        }
+        this.meCardCount = parseInt(tmpChoice.options[tmpChoice.selectedIndex].value, 10)
+        this.createdCallback()
+      })
+      this.meShadow.insertBefore(tmpBoard, this.meShadow.firstElementChild)
+    }
+    if (tmpImport) { // Check if the link is already on the page
+      tmpConstWin()
+    } else {
+      tmpImport = document.createElement('link')
+      tmpImport.setAttribute('rel', 'import')
+      tmpImport.setAttribute('href', '/imports/GameMemory.html')
+      document.head.appendChild(tmpImport)
+      tmpImport.addEventListener('load', tmpConstWin)
+    }
   }
 
   shuffleCards () {
@@ -119,7 +150,7 @@ class GameMemory extends window.HTMLElement {
   }
 
   static get defaultAppSize () {
-    return {width: 320, height: 450}
+    return {width: 320, height: 400}
   }
 }
 
