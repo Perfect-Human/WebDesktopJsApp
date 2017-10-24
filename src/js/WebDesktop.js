@@ -2,9 +2,9 @@ class WebDesktop extends window.HTMLElement {
   constructor () {
     super()
     this._moveXdif = this._moveYdif = this._oldWidth = this._oldHeight = -9999
-    this._apps = new Array(0)
-    this._windows = new Array(0)
-    this._nextWinX = this._nextWinY = 10
+    this._apps = new Array(0) // Holds references to all the app (not yet created/running)
+    this._windows = new Array(0) // Holds references to all the open windows on desktop
+    this._nextWinX = this._nextWinY = 10 // Tracks the next position for the next open window
     this.createdCallback()
   }
 
@@ -35,7 +35,7 @@ class WebDesktop extends window.HTMLElement {
    * Prepares the desktop's events needed (intended as private)
    */
   _prepareEvents () {
-    this._eventBarClickHandler = ev => {
+    this._eventBarClickHandler = ev => { // A handler function to handle 'click' event for the desktop-bar
       if (ev.target.tagName === 'A') {
         let TmpApp = ev.target.ApplicationClass
         // let tmpWin = new this._WindowClass(TmpApp.appName)
@@ -53,7 +53,7 @@ class WebDesktop extends window.HTMLElement {
         this._nextWinY = (this._nextWinY + 10) % (this._deskTop.clientHeight / 3 * 2)
       }
     }
-    this._eventTopClickHandler = ev => {
+    this._eventTopClickHandler = ev => { // A handler function to handle 'click' event for the desktop
       if (ev.target.tagName === 'A') {
         if (ev.target.classList.contains('app-win-close')) {
           this._closeWin(ev.path[4]) // The fourth parent
@@ -77,7 +77,7 @@ class WebDesktop extends window.HTMLElement {
         }
       }
     }
-    this._eventTopMouseDownHandler = ev => {
+    this._eventTopMouseDownHandler = ev => { // A handler function to handle 'mousedown' event for the desktop
       // let tmpElem = ev.path[0]
       for (let i = 0; i < ev.path.length; i++) {
         if (ev.path[i].tagName === 'MY-APP-WINDOW') {
@@ -111,7 +111,7 @@ class WebDesktop extends window.HTMLElement {
         }
       }
     }
-    this._eventTopMouseMoveHandler = ev => {
+    this._eventTopMouseMoveHandler = ev => { // A handler function to handle 'mousemove' event for the desktop
       if (this._tempMoved) { // This is for moving
         this._tempMoved.parentNode.windowLeft = ev.clientX - this._moveXdif
         this._tempMoved.parentNode.windowTop = ev.clientY - this._moveYdif
@@ -149,8 +149,9 @@ class WebDesktop extends window.HTMLElement {
         }
       }
     }
-    this._eventDocMouseUpHandler = ev => {
-      this._deskTop.addEventListener('mousemove', this._eventTopMouseMoveHandler)
+    this._eventDocMouseUpHandler = ev => { // A handler function to handle 'mouseup' event for the 'document'
+      // First, we remove the attached listener functions
+      this._deskTop.removeEventListener('mousemove', this._eventTopMouseMoveHandler)
       document.removeEventListener('mouseup', this._eventDocMouseUpHandler)
       if (this._tempMoved) {
         this._tempMoved.parentNode.isTransparent = false
@@ -160,19 +161,19 @@ class WebDesktop extends window.HTMLElement {
       } else if (this._tempTopEdge) {
         this._tempTopEdge.parentNode.isTransparent = false
         this._moveYdif = -9999
-        this._tempTopEdge = null
+        this._tempTopEdge = null // to indicate move end
       } else if (this._tempRightEdge) {
         this._tempRightEdge.parentNode.isTransparent = false
         this._moveXdif = -9999
-        this._tempRightEdge = null
+        this._tempRightEdge = null // to indicate move end
       } else if (this._tempBotEdge) {
         this._tempBotEdge.parentNode.isTransparent = false
         this._moveYdif = -9999
-        this._tempBotEdge = null
+        this._tempBotEdge = null // to indicate move end
       } else if (this._tempLeftEdge) {
         this._tempLeftEdge.parentNode.isTransparent = false
         this._moveXdif = -9999
-        this._tempLeftEdge = null
+        this._tempLeftEdge = null // to indicate move end
       }
     }
   }

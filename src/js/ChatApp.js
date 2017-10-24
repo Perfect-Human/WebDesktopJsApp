@@ -12,9 +12,8 @@ const THE_STORAGE_USER_KEY = 'CHAT_USER'
 class ChatApp extends window.HTMLElement {
   constructor () {
     super()
-    if (window.localStorage.length) {
+    if ((this._userName = window.localStorage.getItem(THE_STORAGE_USER_KEY))) {
       this._chatRecord = JSON.parse(window.localStorage.getItem(THE_STORAGE_HIST_KEY))
-      this._userName = window.localStorage.getItem(THE_STORAGE_USER_KEY)
     } else {
       this._chatRecord = new Array(0)
       this._userName = ''
@@ -97,6 +96,10 @@ class ChatApp extends window.HTMLElement {
     return outBubble
   }
 
+  /**
+   * A factory for message objects to send to server
+   * @param {*} theMsg
+   */
   _MessageFactory (theMsg) {
     return {
       type: 'message',
@@ -107,8 +110,11 @@ class ChatApp extends window.HTMLElement {
     }
   }
 
+  /**
+   * A handler for the web socket 'message' event
+   * @param {*} theEvent the web socket event
+   */
   _msgReceivedHandler (theEvent) {
-    // console.log(theEvent.data)
     let tmpData = JSON.parse(theEvent.data)
     switch (tmpData.type) {
       case 'message':
