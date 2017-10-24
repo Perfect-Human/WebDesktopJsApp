@@ -107,6 +107,9 @@ class GameMemory extends window.HTMLElement {
     }, THE_ERR_TIME)
   }
 
+  endApp () { // Nothing to do here (just removing the app from DOM is enough)
+  }
+
   static get appIconURL () {
     return THE_APP_ICON
   }

@@ -195,7 +195,9 @@ class WebDesktop extends window.HTMLElement {
    */
   _putWinOnTop (theWindow) {
     let tmpIndex = this._windows.findIndex(elem => elem === theWindow)
-    this._windows[this._windows.length - 1].isActive = false
+    if (this._windows.length > 0) {
+      this._windows[this._windows.length - 1].isActive = false
+    }
     theWindow.isActive = true
     if (tmpIndex > -1) {
       theWindow.lastElementChild.style.zIndex = this._windows[this._windows.length - 1].lastElementChild.style.zIndex
@@ -226,8 +228,12 @@ class WebDesktop extends window.HTMLElement {
     if (this._windows[this._windows.length - 1] !== theWindow) {
       this._putWinOnTop(theWindow)
     }
+    theWindow.endWindow()
     this._windows.pop()
     this._deskTop.removeChild(theWindow)
+    if (this._windows.length > 0) {
+      this._putWinOnTop(this._windows[this._windows.length - 1])
+    }
   }
 
   /**

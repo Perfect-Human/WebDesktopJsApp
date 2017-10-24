@@ -33,7 +33,7 @@ class AppWindow extends window.HTMLElement {
 
   _importHtml () {
     let tmpLink = document.head.querySelector('link[rel="import"][href="/imports/AppWindow.html"]')
-    let tmpConstWin = () => {
+    let tmpConstWin = () => { // Used to construct the window
       this._windowOuter = tmpLink.import.querySelector('div.app-win').cloneNode(true)
       this._windowBar = this._windowOuter.querySelector('div.app-win-bar')
       this._windowTitle = this._windowOuter.querySelector('div.app-win-title')
@@ -74,7 +74,7 @@ class AppWindow extends window.HTMLElement {
       // this._shadow.appendChild(this._windowOuter)
       this.appendChild(this._windowOuter)
     }
-    if (tmpLink) {
+    if (tmpLink) { // Check if the link is already on the page
       tmpConstWin()
     } else {
       tmpLink = document.createElement('link')
@@ -83,6 +83,10 @@ class AppWindow extends window.HTMLElement {
       document.head.appendChild(tmpLink)
       tmpLink.addEventListener('load', tmpConstWin)
     }
+  }
+
+  endWindow () {
+    this._winApp.endApp()
   }
 
   /**
