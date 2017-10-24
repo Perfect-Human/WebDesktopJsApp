@@ -141,6 +141,11 @@ class ChatApp extends window.HTMLElement {
     window.localStorage.setItem(THE_STORAGE_HIST_KEY, JSON.stringify(this._chatRecord))
   }
 
+  // From here down is considered the interface for an app //
+
+  /**
+   * Ends the application gracefully
+   */
   endApp () {
     if (!this._srvCom.isClosed) {
       this._chatTextBox.value = this._userName + ' signing off...'
@@ -149,14 +154,23 @@ class ChatApp extends window.HTMLElement {
     }
   }
 
+  /**
+   * Specifies the app icon's URL (static)
+   */
   static get appIconURL () {
     return THE_APP_ICON
   }
 
+  /**
+   * Specifies the app name (static)
+   */
   static get appName () {
     return THE_APP_NAME
   }
 
+  /**
+   * Specifies the app's default/initial size (static)
+   */
   static get defaultAppSize () {
     return {width: 400, height: 320}
   }

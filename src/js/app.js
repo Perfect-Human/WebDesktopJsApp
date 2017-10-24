@@ -7,5 +7,6 @@ function startUp () {
   let tmpDtop = new WebDtop()
   tmpDtop.addApp(require('./GameMemory'))
   tmpDtop.addApp(require('./ChatApp'))
+  tmpDtop.addApp(require('./GameClick'))
   document.body.insertBefore(tmpDtop, document.body.firstChild)
 }
