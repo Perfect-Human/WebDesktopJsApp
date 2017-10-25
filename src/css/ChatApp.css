@@ -43,9 +43,10 @@
 }
 
 .chat-bubble-message {
-  float: left;
+  /* float: left; */
   display: block;
-  margin: 0px;
+	margin: 0px;
+	word-break: break-word; /* In case the up one does not work */
 }
 
 .chat-arrow-left {
