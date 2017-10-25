@@ -1,14 +1,15 @@
 const THE_APP_ICON = '/image/chat-app-icon.png'
 const THE_APP_NAME = 'Chat Application'
-const THE_CHAT_SECURE_SERVER = 'wss://azmat.se:443/testtest/'
-// const THE_CHAT_SERVER = 'ws://vhost3.lnu.se:20080/socket/'
-const THE_CHAT_PROTS = 'secure'
+const THE_CHAT_SERVER = 'wss://azmat.se:443/testtest/' // Secoure connection
+// const THE_CHAT_SERVER = 'ws://vhost3.lnu.se:20080/socket/' // Non-secure connection
+const THE_CHAT_PROTS = 'encrypted'
 const THE_CHAT_API_KEY = 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
-const THE_CHAT_CHANNEL = 'secure'
+const THE_CHAT_CHANNEL = ''
+const THE_ENC_CHAT_CHANNEL = 'secure'
 const THE_CHAT_HIST_LIMIT = 30
 const THE_STORAGE_HIST_KEY = 'CHAT_HIST'
 const THE_STORAGE_USER_KEY = 'CHAT_USER'
-const THE_IS_BASE64_ENC = false
+const THE_IS_ENC = true
 
 class ChatApp extends window.HTMLElement {
   constructor () {
@@ -27,7 +28,7 @@ class ChatApp extends window.HTMLElement {
 
   createdCallback () {
     this._CommClass = require('./CommSock')
-    this._srvCom = new this._CommClass(THE_CHAT_SECURE_SERVER, THE_CHAT_PROTS)
+    this._srvCom = new this._CommClass(THE_CHAT_SERVER, THE_CHAT_PROTS)
     let tmpStyle = document.createElement('link')
     let tmpLink = document.head.querySelector('link[rel="import"][href="/imports/ChatApp.html"]')
     this._shadow = this.attachShadow({mode: 'open'})
@@ -78,13 +79,14 @@ class ChatApp extends window.HTMLElement {
         window.localStorage.setItem(THE_STORAGE_USER_KEY, this._chatTextBox.value)
         this._chatHistory.removeChild(this._chatHistory.firstElementChild)
         for (let i = 0; i < this._chatRecord.length; i++) {
-          this._chatHistory.appendChild(this._createChatBubble(this._chatRecord[i].username + ' wrote:', this._chatRecord[i].data, this._chatRecord[i].username === this._userName))
+          let theText = (THE_IS_ENC && this._chatRecord[i].data.startsWith('enc:')) ? this._decryptString(this._chatRecord[i].data.substring(4)) : this._chatRecord[i].data
+          this._chatHistory.appendChild(this._createChatBubble(this._chatRecord[i].username + ' wrote:', theText, this._chatRecord[i].username === this._userName))
         }
         this._srvCom.sendData(this._MessageFactory(this._userName + ' joined the chat'))
         this._isNewChat = false
       } else {
-        if (THE_IS_BASE64_ENC) {
-          this._chatTextBox.value = window.btoa(this._chatTextBox.value)
+        if (THE_IS_ENC) {
+          this._chatTextBox.value = 'enc:' + this._encryptString(this._chatTextBox.value)
         }
         this._srvCom.sendData(this._MessageFactory(this._chatTextBox.value))
       }
@@ -109,7 +111,7 @@ class ChatApp extends window.HTMLElement {
       type: 'message',
       data: theMsg,
       username: this._userName,
-      channel: THE_CHAT_CHANNEL,
+      channel: THE_IS_ENC ? THE_ENC_CHAT_CHANNEL : THE_CHAT_CHANNEL,
       key: THE_CHAT_API_KEY
     }
   }
@@ -122,7 +124,8 @@ class ChatApp extends window.HTMLElement {
     let tmpData = JSON.parse(theEvent.data)
     switch (tmpData.type) {
       case 'message':
-        this._chatHistory.appendChild(this._createChatBubble(tmpData.username + ' wrote:', tmpData.data, tmpData.username === this._userName))
+        let theText = (THE_IS_ENC && tmpData.data.startsWith('enc:')) ? this._decryptString(tmpData.data.substring(4)) : tmpData.data
+        this._chatHistory.appendChild(this._createChatBubble(tmpData.username + ' wrote:', theText, tmpData.username === this._userName))
         this._addToChatHistory(tmpData)
         this._chatHistory.scrollTop = this._chatHistory.scrollHeight
         break
@@ -139,6 +142,26 @@ class ChatApp extends window.HTMLElement {
       this._chatHistory.removeChild(this._chatHistory.firstElementChild)
     }
     window.localStorage.setItem(THE_STORAGE_HIST_KEY, JSON.stringify(this._chatRecord))
+  }
+
+  _encryptString (theString) {
+    // return window.btoa(theString) // Base64
+    return this._xorExcDec(theString)
+  }
+
+  _decryptString (theString) {
+    // return window.atob(theString) // Base64
+    return this._xorExcDec(theString)
+  }
+
+  _xorExcDec (theString) { // Based on: 'https://github.com/KyleBanks/XOREncryption/blob/master/JavaScript/XOREncryption.js'
+    let tmpKey = ['J', 'A', 'N', 'T', 'Y']
+    var outChars = []
+    for (var i = 0; i < theString.length; i++) {
+      var charCode = theString.charCodeAt(i) ^ tmpKey[i % tmpKey.length].charCodeAt(0)
+      outChars.push(String.fromCharCode(charCode))
+    }
+    return outChars.join('')
   }
 
   // From here down is considered the interface for an app //

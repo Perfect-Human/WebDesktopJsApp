@@ -41,6 +41,12 @@ class GameMemory extends window.HTMLElement {
       this.meCards[i] = new this.GameCard(Math.floor(i / 2) + 1, this.meCardCount === 4 ? 50 : 25)
     }
     this.mePlayBoard.addEventListener('click', ev => {
+      if (!this.meInterval) {
+        this.meInterval = window.setInterval(() => {
+          this.meTime += 0.1
+          this.meTimeBoard.innerText = this.meTime.toFixed(1)
+        }, 100)
+      }
       if (ev.target instanceof this.GameCard && !ev.target.isDeactivated && !ev.target.isShown) {
         ev.target.flipCard()
         let tmpShown = this.meCards.filter(elem => elem.isShown)
@@ -58,9 +64,17 @@ class GameMemory extends window.HTMLElement {
     this.meCards.forEach(elem => this.mePlayBoard.appendChild(elem))
     this.meShadow.appendChild(this.meScoreBoard)
     this.meScoreBoard = this.meScoreBoard.lastElementChild
+    this.meScoreBoard.appendChild(document.createTextNode('Time: '))
+    this.meTimeBoard = document.createElement('span')
+    this.meScoreBoard.appendChild(this.meTimeBoard)
+    this.meScoreBoard.appendChild(document.createTextNode(' Tries: '))
+    this.meScoreBoard.appendChild(document.createElement('span'))
+    this.meScoreBoard = this.meScoreBoard.lastElementChild
+    this.meTimeBoard.innerText = '0.0'
     this.meScoreBoard.innerText = '0'
     this.meShadow.appendChild(this.mePlayBoard)
     this.meShadow.appendChild(this.meMatchBoard)
+    this.meTime = 0.0
     this._addControlBoard()
   }
 
@@ -75,6 +89,10 @@ class GameMemory extends window.HTMLElement {
       let tmpBut = tmpBoard.querySelector('#game-start-but')
       let tmpChoice = tmpBoard.querySelector('#game-choice')
       tmpBut.addEventListener('click', () => {
+        if (this.meInterval) {
+          window.clearInterval(this.meInterval)
+          this.meInterval = null
+        }
         while (this.meShadow.lastChild) {
           this.meShadow.removeChild(this.meShadow.lastChild)
         }
@@ -94,6 +112,9 @@ class GameMemory extends window.HTMLElement {
     }
   }
 
+  /**
+   * Shuffles the cards' array
+   */
   shuffleCards () {
     for (let i = this.meCards.length - 1; i > 0; i--) { // Shuffle the array. From 'https://www.frankmitchell.org/2015/01/fisher-yates/'
       let tmpRand = Math.floor(Math.random() * (i + 1))
@@ -103,6 +124,10 @@ class GameMemory extends window.HTMLElement {
     }
   }
 
+  /**
+   * Starts a timeout timer when the player flips a match pair
+   * @param {*} shownCards an array of shown cards (it is of size two)
+   */
   correctTimer (shownCards) {
     this.mePlayBoard.disabled = true
     window.setTimeout(() => {
@@ -120,11 +145,18 @@ class GameMemory extends window.HTMLElement {
       this.meScoreBoard.innerText = this.meCounter
       if (tmpIsFin) {
         this.meScoreBoard.innerText += ' HAYY... You Win.'
+        window.clearInterval(this.meInterval)
+        this.meInterval = null
+        this.meTime = 0.0
       }
       this.mePlayBoard.disabled = false
     }, THE_CORR_RIME)
   }
 
+  /**
+   * Starts a timeout timer when the player flips a mismatch pair
+   * @param {*} shownCards an array of shown cards (it is of size two)
+   */
   wrongTimer (shownCards) {
     this.mePlayBoard.disabled = true
     this.meScoreBoard.innerText = this.meCounter
@@ -138,17 +170,32 @@ class GameMemory extends window.HTMLElement {
     }, THE_ERR_TIME)
   }
 
-  endApp () { // Nothing to do here (just removing the app from DOM is enough)
+  // From here down is considered the interface for an app //
+
+  /**
+   * Ends the application gracefully
+   */
+  endApp () {
+    window.clearInterval(this.meInterval)
   }
 
+  /**
+   * Specifies the app icon's URL (static)
+   */
   static get appIconURL () {
     return THE_APP_ICON
   }
 
+  /**
+   * Specifies the app name (static)
+   */
   static get appName () {
     return THE_APP_NAME
   }
 
+  /**
+   * Specifies the app's default/initial size (static)
+   */
   static get defaultAppSize () {
     return {width: 320, height: 400}
   }
