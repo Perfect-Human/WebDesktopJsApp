@@ -145,23 +145,11 @@ class ChatApp extends window.HTMLElement {
   }
 
   _encryptString (theString) {
-    // return window.btoa(theString) // Base64
-    return this._xorExcDec(theString)
+    return window.btoa(theString) // Base64
   }
 
   _decryptString (theString) {
-    // return window.atob(theString) // Base64
-    return this._xorExcDec(theString)
-  }
-
-  _xorExcDec (theString) { // Based on: 'https://github.com/KyleBanks/XOREncryption/blob/master/JavaScript/XOREncryption.js'
-    let tmpKey = ['J', 'A', 'N', 'T', 'Y']
-    var outChars = []
-    for (var i = 0; i < theString.length; i++) {
-      var charCode = theString.charCodeAt(i) ^ tmpKey[i % tmpKey.length].charCodeAt(0)
-      outChars.push(String.fromCharCode(charCode))
-    }
-    return outChars.join('')
+    return window.atob(theString) // Base64
   }
 
   // From here down is considered the interface for an app //
