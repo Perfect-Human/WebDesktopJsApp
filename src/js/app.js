@@ -8,5 +8,7 @@ function startUp () {
   tmpDtop.addApp(require('./GameMemory'))
   tmpDtop.addApp(require('./ChatApp'))
   tmpDtop.addApp(require('./GameClick'))
+  tmpDtop.addApp(require('./InterminatorApp'))
+  tmpDtop.addApp(require('./CalcApp'))
   document.body.insertBefore(tmpDtop, document.body.firstChild)
 }

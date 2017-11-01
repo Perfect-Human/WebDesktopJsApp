@@ -244,6 +244,7 @@ class WebDesktop extends window.HTMLElement {
   addApp (AppClass) {
     let tmpIcon = document.createElement('a')
     tmpIcon.setAttribute('href', 'javascript:')
+    tmpIcon.setAttribute('title', AppClass.appName)
     tmpIcon.classList.add('desk-icon')
     tmpIcon.style.backgroundImage = 'url("' + AppClass.appIconURL + '")'
     tmpIcon['ApplicationClass'] = AppClass

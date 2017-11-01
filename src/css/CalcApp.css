@@ -1,0 +1,74 @@
+/* From a ready made implementation at: https://codepen.io/BKHilton/pen/OXBjrb */
+
+#container {
+  width: 400px ;
+  margin-left: auto ;
+	margin-right: auto ;
+}
+
+#calculator {
+  width: 400px;
+  height: 384px;
+  border: 3px solid #247BA0;
+  border-radius: 5px;
+  background-color: #50514F;
+  box-shadow: 3px 3px black;
+}
+
+#results {
+  width: 395px;
+  height: 76px;
+  font-size: 56px;
+  text-align: right;
+  margin-left: auto ;
+  margin-right: auto ;
+  border: 2px solid #F25F5C;
+  border-radius: 5px;
+}
+
+.number, .calculate {
+  width: 70px;
+  height: 70px;
+  margin-left: 5px;
+  margin-top: 3px;
+  border-radius: 10px;
+  background-color: #FFE066;
+  color: #247BA0;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+#clear {
+  background-color: #247BA0;
+  color: #FFE066;
+}
+
+#abs {
+  background-color: #F25F5C;
+  color: #FFE066;
+}
+
+#modulous {
+  background-color: #F25F5C;
+  color: #FFE066;
+}
+
+#squareRoot {
+  background-color: #F25F5C;
+  color: #FFE066;
+}
+
+#decimal {
+  background-color: #F25F5C;
+  color: #FFE066;
+}
+
+.number:hover, .calculate:hover {
+  background-color: #247BA0;
+  color: #FFE066;
+}
+
+#clear:hover {
+  background-color: #F25F5C;
+  color: #247BA0;
+}
