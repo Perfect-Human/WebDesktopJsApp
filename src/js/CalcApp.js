@@ -1,4 +1,4 @@
-// Based on a ready working implementation from: https://codepen.io/BKHilton/pen/OXBjrb
+// Based on implementation from: https://codepen.io/BKHilton/pen/OXBjrb (not working well, but the visual fits)
 const THE_APP_ICON = '/image/calc-app-icon.png'
 const THE_APP_NAME = 'Calculator'
 
